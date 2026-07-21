@@ -71,11 +71,24 @@ export class StellarAdapter extends BaseChainAdapter {
     if (assetString === 'XLM') {
       return { code: 'XLM', issuer: null, native: true };
     }
+
+    if (/^C[A-Z0-9]{10,}$/.test(assetString)) {
+      return {
+        code: assetString,
+        issuer: null,
+        native: false,
+        contractId: assetString,
+        isSorobanContract: true,
+      };
+    }
+
     const [code, issuer] = assetString.split(':');
     return {
       code,
       issuer,
       native: false,
+      contractId: null,
+      isSorobanContract: false,
     };
   }
 
@@ -96,6 +109,22 @@ export class StellarAdapter extends BaseChainAdapter {
         totalSupply: 50000000000, // approximate total XLM supply (circulating)
         createdAt: '2014-07-31',
         chainId: this.chainId,
+      });
+    }
+
+    if (asset.isSorobanContract) {
+      const contractData = await this.getSorobanContractData(asset.contractId);
+
+      return new NormalizedTokenData({
+        address: asset.contractId,
+        symbol: 'SOROBAN',
+        name: `Soroban Contract ${asset.contractId.slice(0, 8)}`,
+        decimals: 7,
+        issuer: null,
+        totalSupply: 0,
+        createdAt: null,
+        chainId: this.chainId,
+        contractData,
       });
     }
 
@@ -351,7 +380,9 @@ export class StellarAdapter extends BaseChainAdapter {
     let issuanceData = null;
     let contractData = null;
 
-    if (tokenData.issuer) {
+    if (tokenData.address.startsWith('C')) {
+      contractData = await this.getSorobanContractData(tokenData.address);
+    } else if (tokenData.issuer) {
       issuerData = await this.getAccountData(tokenData.issuer);
       issuanceData = await this.getAssetIssuanceData(assetString);
       contractData = await this.getSorobanContractData(tokenData.issuer);

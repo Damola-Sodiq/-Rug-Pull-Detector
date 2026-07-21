@@ -1,6 +1,10 @@
 const BACKEND_API_BASE_URL = process.env.BACKEND_API_BASE_URL || 'http://127.0.0.1:8080';
 
 function toNumber(value) {
+  if (value === '' || value === null || value === undefined) {
+    return null;
+  }
+
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
