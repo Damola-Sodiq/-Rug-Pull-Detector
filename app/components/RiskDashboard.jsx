@@ -1,7 +1,5 @@
-'use client';
-
-import Link from 'next/link';
-import { Shield, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import React from 'react';
+import { Shield, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 function RiskDashboard({ analyzedTokens }) {
   const getRiskLevelColor = (level) => {
